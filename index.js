@@ -232,7 +232,7 @@ end;\n`
         const left = node.left;
         const right = node.right;
 
-        res += `${left.name}`;
+        res += Transpiler.convert(left);
 
         if (node.operator === '=') {
             res += ' = ';
@@ -282,9 +282,11 @@ end;\n`
 
         res += Transpiler.convert(object);
 
-        res += '.';
-
-        res += Transpiler.convert(property);
+        if (node.computed) {
+            res += `[${Transpiler.convert(property)}]`;
+        } else {
+            res += `.${Transpiler.convert(property)}`;
+        }
 
         if (res === 'console.log') {
             res = 'print';
