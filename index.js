@@ -123,7 +123,7 @@ class Transpiler {
             }
         }
 
-        return res + (recursive ? 'end;\n' : '\n');
+        return res + (recursive ? '\n' : 'end;\n');
     }
 
     static writeForStatement(node) {
