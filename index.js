@@ -31,6 +31,7 @@ class Transpiler {
         'CallExpression': Transpiler.writeCallExpression,
         'TemplateLiteral': Transpiler.writeTemplateLiteral,
         'ArrowFunctionExpression': Transpiler.writeArrowFunctionExpression,
+        'FunctionExpression': Transpiler.writeFunctionExpression,
         'ConditionalExpression': Transpiler.writeConditionalExpression,
         'SpreadElement': Transpiler.writeSpreadElement,
         'ExpressionStatement': Transpiler.writeExpressionStatement,
@@ -471,6 +472,10 @@ end;\n`
         }
 
         return res + 'end';
+    }
+
+    static writeFunctionExpression(node) {
+        return Transpiler.writeArrowFunctionExpression(node);
     }
 
     static writeConditionalExpression(node) {
