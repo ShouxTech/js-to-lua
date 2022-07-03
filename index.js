@@ -126,7 +126,34 @@ class Transpiler {
     }
 
     static writeForStatement(node) {
-        // TODO: make it work
+        let res = 'do\n';
+    
+        res += Transpiler.convert(node.init);
+
+        if (node.update) {
+            res += 'local _js_shouldIncrement = false;\n';
+        }
+
+        res += 'while ';
+        res += Transpiler.convert(node.test) + ' do\n';
+
+        if (node.update) {
+            res +=
+`if _js_shouldIncrement then
+${Transpiler.convert(node.update)}
+else
+_js_shouldIncrement = true;
+end;
+if not (${Transpiler.convert(node.test)}) then
+break;
+end;\n`
+        }
+
+        res += Transpiler.writeBody(node.body.body);
+
+        res += 'end;\n';
+
+        return res + 'end;\n';
     }
 
     static writeWhileStatement(node) {
@@ -231,6 +258,10 @@ class Transpiler {
         res += '.';
 
         res += Transpiler.convert(property);
+
+        if (res === 'console.log') {
+            res = 'print';
+        }
 
         return res;
     }
