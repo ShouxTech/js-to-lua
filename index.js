@@ -29,6 +29,7 @@ class Transpiler {
         'UnaryExpression': Transpiler.writeUnaryExpression,
         'UpdateExpression': Transpiler.writeUpdateExpression,
         'CallExpression': Transpiler.writeCallExpression,
+        'TemplateLiteral': Transpiler.writeTemplateLiteral,
         'ExpressionStatement': Transpiler.writeExpressionStatement,
 
         'VariableDeclaration': Transpiler.writeVariableDeclaration,
@@ -390,6 +391,36 @@ end;\n`
         }
 
         res += Transpiler.convert(argument);
+
+        return res;
+    }
+
+    static writeTemplateLiteral(node) {
+        let res = '';
+
+        const expressions = node.expressions;
+        const quasis = node.quasis;
+
+        for (let i = 0; i < quasis.length; i++) {
+            const raw = quasis[i].value.raw;
+            const isEmpty = raw === '' && expressions.length > 0; // The '&& expressions.length > 0' is used for catching the `` case.
+
+            if (!isEmpty) {
+                res += `'${raw}'`;
+            }
+            if (i < expressions.length) {
+                if (!isEmpty) {
+                    res += ' .. '
+                }
+
+                res += Transpiler.convert(expressions[i]);
+
+                const nextQuasisIndex = i + 1;
+                if (nextQuasisIndex < quasis.length && quasis[nextQuasisIndex].value.raw !== '') {
+                    res += ' .. '
+                }
+            }
+        }
 
         return res;
     }
