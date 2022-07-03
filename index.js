@@ -31,6 +31,7 @@ class Transpiler {
         'CallExpression': Transpiler.writeCallExpression,
         'TemplateLiteral': Transpiler.writeTemplateLiteral,
         'ArrowFunctionExpression': Transpiler.writeArrowFunctionExpression,
+        'ConditionalExpression': Transpiler.writeConditionalExpression,
         'ExpressionStatement': Transpiler.writeExpressionStatement,
 
         'VariableDeclaration': Transpiler.writeVariableDeclaration,
@@ -447,6 +448,24 @@ end;\n`
         res += Transpiler.writeBody(body.body);
 
         return res + 'end';
+    }
+
+    static writeConditionalExpression(node) {
+        let res = '';
+
+        const test = node.test;
+        const consequent = node.consequent;
+        const alternate = node.alternate;
+
+        res += `(${Transpiler.convert(test)})`;
+        res += ' and ';
+
+        res += Transpiler.convert(consequent);
+        res += ' or ';
+
+        res += Transpiler.convert(alternate);
+
+        return res;
     }
 
     static writeExpressionStatement(node) {
