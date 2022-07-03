@@ -23,9 +23,9 @@ if ((5 == 2) && (true != false)) {
 const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, {a: 1, b: 2}];
 const obj = {a: 1, b: 2, c: [3, 4]};
 
-let notFive = !5
+const notFive = !5
 
-const i = 0;
+let i = 0;
 while (i < 10) {
     console.log(i);
     i++;
