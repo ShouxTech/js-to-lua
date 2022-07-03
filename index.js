@@ -12,8 +12,42 @@ const PARSE_OPTIONS = {
 const ast = acorn.parse(input, PARSE_OPTIONS);
 
 class Transpiler {
-    static writeLiteral(node) {
-        return node.raw;
+    static conversions = {
+        'Literal': (node) => {
+            return node.raw;
+        },
+        'Identifier': (node) => {
+            return node.name;
+        },
+
+        'BinaryExpression': Transpiler.writeBinaryExpression,
+        'LogicalExpression': Transpiler.writeLogicalExpression,
+        'ArrayExpression': Transpiler.writeArrayExpression,
+        'ObjectExpression': Transpiler.writeObjectExpression,
+        'MemberExpression': Transpiler.writeMemberExpression,
+        'AssignmentExpression': Transpiler.writeAssignmentExpression,
+        'UnaryExpression': Transpiler.writeUnaryExpression,
+        'UpdateExpression': Transpiler.writeUpdateExpression,
+        'CallExpression': Transpiler.writeCallExpression,
+        'ExpressionStatement': Transpiler.writeExpressionStatement,
+
+        'VariableDeclaration': Transpiler.writeVariableDeclaration,
+        'BlockStatement': Transpiler.writeBlockStatement,
+        'FunctionDeclaration': Transpiler.writeFunctionDeclaration,
+        'IfStatement': Transpiler.writeIfStatement,
+        'ForStatement': Transpiler.writeForStatement,
+        'WhileStatement': Transpiler.writeWhileStatement,
+        'BreakStatement': Transpiler.writeBreakStatement,
+        'ContinueStatement': Transpiler.writeContinueStatement,
+        'ReturnStatement': Transpiler.writeReturnStatement,
+    }
+
+    static convert(node) {
+        if (node.type in Transpiler.conversions) {
+            return Transpiler.conversions[node.type](node);
+        }
+
+        throw new Error(`Unsupported node type: ${node.type}`);
     }
 
     static writeVariableDeclaration(node) {
@@ -27,19 +61,7 @@ class Transpiler {
 
             res += `local ${name} = `;
 
-            if (init.type === 'Literal') {
-                res += `${Transpiler.writeLiteral(init)};\n`;
-            } else if (init.type === 'BinaryExpression') {
-                res += `${Transpiler.writeBinaryExpression(init)};\n`;
-            } else if (init.type === 'LogicalExpression') {
-                res += `${Transpiler.writeLogicalExpression(init)};\n`;
-            } else if (init.type === 'ArrayExpression') {
-                res += `${Transpiler.writeArrayExpression(init)};\n`;
-            } else if (init.type === 'ObjectExpression') {
-                res += `${Transpiler.writeObjectExpression(init)};\n`;
-            } else if (init.type === 'Identifier') {
-                res += `${init.name};\n`;
-            }
+            res += `${Transpiler.convert(init)};\n`;
         }
 
         return res;
@@ -77,7 +99,7 @@ class Transpiler {
         return res + 'end;\n';
     }
 
-    static writeIfStatement(node) {
+    static writeIfStatement(node, recursive = false) {
         let res = '';
 
         const test = node.test;
@@ -85,27 +107,22 @@ class Transpiler {
         const alternate = node.alternate;
 
         res += 'if ';
-
-        if (test.type === 'Literal') {
-            res += Transpiler.writeLiteral(test);
-        } else if (test.type === 'BinaryExpression') {
-            res += Transpiler.writeBinaryExpression(test);
-        } else if (test.type === 'LogicalExpression') {
-            res += Transpiler.writeLogicalExpression(test);
-        } else if (test.type === 'Identifier') {
-            res += test.name;
-        }
-
+        res += Transpiler.convert(test);
         res += ' then\n';
 
         res += Transpiler.writeBody(consequent.body);
 
         if (alternate) {
-            res += 'else\n';
-            res += Transpiler.writeBody(alternate.body);
+            if (alternate.type === 'IfStatement') {
+                res += 'else';
+                res += Transpiler.writeIfStatement(alternate, true);
+            } else {
+                res += 'else\n';
+                res += Transpiler.writeBody(alternate.body);
+            }
         }
 
-        return res + 'end;\n';
+        return res + (recursive ? 'end;\n' : '\n');
     }
 
     static writeForStatement(node) {
@@ -137,6 +154,24 @@ class Transpiler {
         return res + 'end;\n';
     }
 
+    static writeBreakStatement(node) {
+        return 'break;\n';
+    }
+
+    static writeContinueStatement(node) {
+        return 'continue;\n';
+    }
+
+    static writeReturnStatement(node) {
+        let res = 'return ';
+
+        if (node.argument) {
+            res += Transpiler.convert(node.argument);
+        }
+
+        return res + ';\n';
+    }
+
     static writeAssignmentExpression(node) {
         let res = '';
 
@@ -159,9 +194,7 @@ class Transpiler {
             res += ` = ${left.name} % `;
         }
 
-        if (right.type === 'Literal') {
-            res += Transpiler.writeLiteral(right);
-        }
+        res += Transpiler.convert(right);
 
         return res;
     }
@@ -172,11 +205,7 @@ class Transpiler {
         const left = node.left;
         const right = node.right;
 
-        if (left.type === 'Literal') {
-            res += Transpiler.writeLiteral(left);
-        } else if (left.type === 'Identifier') {
-            res += left.name;
-        }
+        res += Transpiler.convert(left);
 
         if (node.operator === '==' || node.operator === '===') {
             res += ' == ';
@@ -186,11 +215,7 @@ class Transpiler {
             res += ` ${node.operator} `;
         }
 
-        if (right.type === 'Literal') {
-            res += Transpiler.writeLiteral(right);
-        } else if (right.type === 'Identifier') {
-            res += right.name;
-        }
+        res += Transpiler.convert(right);
 
         return res;
     }
@@ -201,19 +226,11 @@ class Transpiler {
         const object = node.object;
         const property = node.property;
 
-        if (object.type === 'Literal') {
-            res += Transpiler.writeLiteral(object);
-        } else if (object.type === 'Identifier') {
-            res += object.name;
-        }
+        res += Transpiler.convert(object);
 
         res += '.';
 
-        if (property.type === 'Literal') {
-            res += Transpiler.writeLiteral(property);
-        } else if (property.type === 'Identifier') {
-            res += property.name;
-        }
+        res += Transpiler.convert(property);
 
         return res;
     }
@@ -224,19 +241,10 @@ class Transpiler {
         const callee = node.callee;
         const args = node.arguments;
 
-        if (callee.type === 'Identifier') {
-            res += `${callee.name}(`;
-        } else if (callee.type === 'MemberExpression') {
-            res += `${Transpiler.writeMemberExpression(callee)}(`;
-        }
+        res += `${Transpiler.convert(callee)}(`;
 
         for (const arg of args) {
-            if (arg.type === 'Literal') {
-                res += Transpiler.writeLiteral(arg);
-            } else if (arg.type === 'Identifier') {
-                res += arg.name;
-            }
-            res += ', ';
+            res += `${Transpiler.convert(arg)}, `;
         }
 
         if (args.length > 0) {
@@ -254,13 +262,7 @@ class Transpiler {
         const left = node.left;
         const right = node.right;
 
-        if (left.type === 'Literal') {
-            res += Transpiler.writeLiteral(left);
-        } else if (left.type === 'BinaryExpression') {
-            res += Transpiler.writeBinaryExpression(left);
-        } else if (left.type === 'Identifier') {
-            res += left.name;
-        }
+        res += Transpiler.convert(left);
 
         if (node.operator === '&&') {
             res += ' and ';
@@ -268,13 +270,7 @@ class Transpiler {
             res += ' or ';
         }
 
-        if (right.type === 'Literal') {
-            res += Transpiler.writeLiteral(right);
-        } else if (right.type === 'BinaryExpression') {
-            res += Transpiler.writeBinaryExpression(right);
-        } else if (right.type === 'Identifier') {
-            res += right.name;
-        }
+        res += Transpiler.convert(right);
 
         return res;
     }
@@ -285,13 +281,7 @@ class Transpiler {
         res += '{';
 
         for (const element of node.elements) {
-            if (element.type === 'Literal') {
-                res += Transpiler.writeLiteral(element);
-            } else if (element.type === 'ObjectExpression') {
-                res += Transpiler.writeObjectExpression(element);
-            } else if (element.type === 'Identifier') {
-                res += element.name;
-            }
+            res += Transpiler.convert(element);
             res += ', ';
         }
 
@@ -312,13 +302,7 @@ class Transpiler {
         for (const property of node.properties) {
             if (property.type === 'Property') {
                 res += `${property.key.name} = `;
-                if (property.value.type === 'Literal') {
-                    res += Transpiler.writeLiteral(property.value);
-                } else if (property.value.type === 'ArrayExpression') {
-                    res += Transpiler.writeArrayExpression(property.value);
-                } else if (property.value.type === 'Identifier') {
-                    res += property.value.name;
-                }
+                res += Transpiler.convert(property.value);
                 res += ', ';
             }
         }
@@ -337,11 +321,7 @@ class Transpiler {
 
         const argument = node.argument;
 
-        if (argument.type === 'Literal') {
-            res += Transpiler.writeLiteral(argument);
-        } else if (argument.type === 'Identifier') {
-            res += argument.name;
-        }
+        res += Transpiler.convert(argument);
 
         if (node.operator === '++') {
             res += ` = ${res} + 1`;
@@ -352,26 +332,28 @@ class Transpiler {
         return res;
     }
 
+    static writeUnaryExpression(node) {
+        let res = '';
+
+        const argument = node.argument;
+
+        if (node.operator === '!') {
+            res += 'not ';
+        } else {
+            res += node.operator;
+        }
+
+        res += Transpiler.convert(argument);
+
+        return res;
+    }
+
     static writeExpressionStatement(node) {
         let res = '';
 
         const expression = node.expression;
 
-        if (expression.type === 'AssignmentExpression') {
-            res += Transpiler.writeAssignmentExpression(expression);
-        } else if (expression.type === 'BinaryExpression') {
-            res += Transpiler.writeBinaryExpression(expression);
-        } else if (expression.type === 'CallExpression') {
-            res += Transpiler.writeCallExpression(expression);
-        } else if (expression.type === 'LogicalExpression') {
-            res += Transpiler.writeLogicalExpression(expression);
-        } else if (expression.type === 'ArrayExpression') {
-            res += Transpiler.writeArrayExpression(expression);
-        } else if (expression.type === 'ObjectExpression') {
-            res += Transpiler.writeObjectExpression(expression);
-        } else if (expression.type === 'UpdateExpression') {
-            res += Transpiler.writeUpdateExpression(expression);
-        }
+        res += Transpiler.convert(expression);
 
         return res + ';\n';
     }
@@ -380,27 +362,13 @@ class Transpiler {
         let res = '';
     
         for (const node of body) {
-            if (node.type === 'VariableDeclaration') {
-                res += Transpiler.writeVariableDeclaration(node);
-            } else if (node.type === 'BlockStatement') {
-                res += Transpiler.writeBlockStatement(node);
-            } else if (node.type === 'FunctionDeclaration') {
-                res += Transpiler.writeFunctionDeclaration(node);
-            } else if (node.type === 'ExpressionStatement') {
-                res += Transpiler.writeExpressionStatement(node);
-            } else if (node.type === 'IfStatement') {
-                res += Transpiler.writeIfStatement(node);
-            } else if (node.type === 'ForStatement') {
-                res += Transpiler.writeForStatement(node);
-            } else if (node.type === 'WhileStatement') {
-                res += Transpiler.writeWhileStatement(node);
-            }
+            res += Transpiler.convert(node);
         }
 
         return res;
     }
 
-    static write(ast) {
+    static transpile(ast) {
         let res = '';
 
         res += Transpiler.writeBody(ast.body);
@@ -409,6 +377,6 @@ class Transpiler {
     }
 }
 
-const res = Transpiler.write(ast);
+const res = Transpiler.transpile(ast);
 
 console.log(DO_FORMAT ? luaFmt.formatText(res) : res);
