@@ -35,3 +35,7 @@ while (i < 10) {
 for (let i = 0; i < 10; i++) {
     console.log(i);
 }
+
+for (const data of arr) {
+	console.log(data);
+}
