@@ -36,6 +36,7 @@ class Transpiler {
         'FunctionDeclaration': Transpiler.writeFunctionDeclaration,
         'IfStatement': Transpiler.writeIfStatement,
         'ForStatement': Transpiler.writeForStatement,
+        'ForOfStatement': Transpiler.writeForOfStatement,
         'WhileStatement': Transpiler.writeWhileStatement,
         'BreakStatement': Transpiler.writeBreakStatement,
         'ContinueStatement': Transpiler.writeContinueStatement,
@@ -152,6 +153,20 @@ end;\n`
         res += Transpiler.writeBody(node.body.body);
 
         res += 'end;\n';
+
+        return res + 'end;\n';
+    }
+
+    static writeForOfStatement(node) {
+        let res = '';
+
+        res += 'for _, ';
+        res += node.left.declarations[0].id.name;
+        res += ' in next, ';
+        res += Transpiler.convert(node.right);
+        res += ' do\n';
+
+        res += Transpiler.writeBody(node.body.body);
 
         return res + 'end;\n';
     }
