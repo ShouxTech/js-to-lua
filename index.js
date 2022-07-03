@@ -102,7 +102,7 @@ class Transpiler {
 
         for (const param of params) {
             if (param.type === 'AssignmentPattern') {
-                res += `if (${Transpiler.convert(param.left)} == nil) then ${Transpiler.convert(param.left)} = ${Transpiler.convert(param.right)} end;\n`;
+                res += `if (${Transpiler.convert(param.left)} == nil) then ${Transpiler.convert(param.left)} = ${Transpiler.convert(param.right)}; end;\n`;
             }
         }
 
