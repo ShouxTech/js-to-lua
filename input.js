@@ -39,3 +39,12 @@ for (let i = 0; i < 10; i++) {
 for (const data of arr) {
 	console.log(data);
 }
+
+const luaStr = 'lua';
+
+const str = `${luaStr}world`;
+const str2 = `hello${luaStr}`;
+const str3 = `hello${luaStr}world`;
+const str4 = `${luaStr}`;
+const str5 = `hello`;
+const str6 = ``;
