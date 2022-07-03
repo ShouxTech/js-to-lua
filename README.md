@@ -1,6 +1,6 @@
 # JavaScript to Lua
 
-This project is missing many features (classes, etc). I made this to learn about transpiling using an abstract syntax tree.
+This project is missing many features (default parameters, classes, etc). I made this to learn about transpiling using an abstract syntax tree.
 
 ```javascript
 function callMe(args) {
