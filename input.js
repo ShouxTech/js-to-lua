@@ -48,3 +48,7 @@ const str3 = `hello${luaStr}world`;
 const str4 = `${luaStr}`;
 const str5 = `hello`;
 const str6 = ``;
+
+const arrowFunc = (data) => {
+    console.log('hello from an arrow function', data);
+}
