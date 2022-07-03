@@ -34,6 +34,8 @@ while (i < 10) {
 
 for (let i = 0; i < 10; i++) {
     console.log(i);
+    arr[i] = 'ok';
+    arr.i = 'hello';
 }
 
 for (const data of arr) {
