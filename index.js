@@ -459,7 +459,7 @@ end;\n`
         if (body.type === 'BlockStatement') {
             res += Transpiler.writeBody(body.body);
         } else {
-            res += Transpiler.convert(body);
+            res += `return ${Transpiler.convert(body)};\n`;
         }
 
         return res + 'end';
