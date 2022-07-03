@@ -32,6 +32,7 @@ class Transpiler {
         'TemplateLiteral': Transpiler.writeTemplateLiteral,
         'ArrowFunctionExpression': Transpiler.writeArrowFunctionExpression,
         'ConditionalExpression': Transpiler.writeConditionalExpression,
+        'SpreadElement': Transpiler.writeSpreadElement,
         'ExpressionStatement': Transpiler.writeExpressionStatement,
 
         'VariableDeclaration': Transpiler.writeVariableDeclaration,
@@ -453,7 +454,11 @@ end;\n`
 
         res += ')\n';
 
-        res += Transpiler.writeBody(body.body);
+        if (body.type === 'BlockStatement') {
+            res += Transpiler.writeBody(body.body);
+        } else {
+            res += Transpiler.convert(body);
+        }
 
         return res + 'end';
     }
@@ -472,6 +477,16 @@ end;\n`
         res += ' or ';
 
         res += Transpiler.convert(alternate);
+
+        return res;
+    }
+
+    static writeSpreadElement(node) {
+        let res = '';
+
+        const argument = node.argument;
+
+        res += `unpack(${Transpiler.convert(argument)})`;
 
         return res;
     }
