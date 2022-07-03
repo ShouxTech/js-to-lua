@@ -30,6 +30,7 @@ class Transpiler {
         'UpdateExpression': Transpiler.writeUpdateExpression,
         'CallExpression': Transpiler.writeCallExpression,
         'TemplateLiteral': Transpiler.writeTemplateLiteral,
+        'ArrowFunctionExpression': Transpiler.writeArrowFunctionExpression,
         'ExpressionStatement': Transpiler.writeExpressionStatement,
 
         'VariableDeclaration': Transpiler.writeVariableDeclaration,
@@ -423,6 +424,29 @@ end;\n`
         }
 
         return res;
+    }
+
+    static writeArrowFunctionExpression(node) {
+        let res = '';
+
+        const params = node.params;
+        const body = node.body;
+
+        res += 'function(';
+
+        for (const param of params) {
+            res += `${param.name}, `;
+        }
+
+        if (params.length > 0) {
+            res = res.slice(0, -2);
+        }
+
+        res += ')\n';
+
+        res += Transpiler.writeBody(body.body);
+
+        return res + 'end';
     }
 
     static writeExpressionStatement(node) {
