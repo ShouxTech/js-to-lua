@@ -54,3 +54,7 @@ const arrowFunc = (data) => {
 }
 
 const ternary = (5 == 3) ? 'yes' : 'no';
+
+function defaultParams(a = 1, b = 2, c) {
+    console.log(a, b, c);
+}
