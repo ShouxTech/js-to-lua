@@ -445,16 +445,24 @@ end;\n`
         const body = node.body;
 
         res += 'function(';
-
         for (const param of params) {
-            res += `${param.name}, `;
+            if (param.type === 'AssignmentPattern') {
+                res += Transpiler.convert(param.left);
+            } else {
+                res += Transpiler.convert(param);
+            }
+            res += ', ';
         }
-
         if (params.length > 0) {
             res = res.slice(0, -2);
         }
-
         res += ')\n';
+
+        for (const param of params) {
+            if (param.type === 'AssignmentPattern') {
+                res += `if (${Transpiler.convert(param.left)} == nil) then ${Transpiler.convert(param.left)} = ${Transpiler.convert(param.right)}; end;\n`;
+            }
+        }
 
         if (body.type === 'BlockStatement') {
             res += Transpiler.writeBody(body.body);
