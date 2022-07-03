@@ -52,3 +52,5 @@ const str6 = ``;
 const arrowFunc = (data) => {
     console.log('hello from an arrow function', data);
 }
+
+const ternary = (5 == 3) ? 'yes' : 'no';
