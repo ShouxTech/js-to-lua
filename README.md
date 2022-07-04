@@ -2,6 +2,8 @@
 
 This project is missing many features (classes, etc). I made this to learn about transpiling using an abstract syntax tree.
 
+Playground: https://shouxtech.github.io/js-to-lua/
+
 ```javascript
 function callMe(args) {
     console.log(args);
