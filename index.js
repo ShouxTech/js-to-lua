@@ -302,7 +302,14 @@ end;\n`
         const callee = node.callee;
         const args = node.arguments;
 
-        res += `${Transpiler.convert(callee)}(`;
+        if (callee.type === 'ArrowFunctionExpression' || callee.type === 'FunctionExpression') {
+            res += '(';
+        }
+        res += Transpiler.convert(callee);
+        if (callee.type === 'ArrowFunctionExpression' || callee.type === 'FunctionExpression') {
+            res += ')';
+        }
+        res += '(';
 
         for (const arg of args) {
             res += `${Transpiler.convert(arg)}, `;
