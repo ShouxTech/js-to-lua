@@ -2,14 +2,10 @@ const acorn = require('acorn');
 const fs = require('fs');
 const luaFmt = require('lua-fmt');
 
-const input = fs.readFileSync('input.js');
-
 const DO_FORMAT = true; // Format the outputted Lua code.
 const PARSE_OPTIONS = {
     ecmaVersion: 2021,
 };
-
-const ast = acorn.parse(input, PARSE_OPTIONS);
 
 class Transpiler {
     static conversions = {
@@ -533,8 +529,10 @@ end;\n`
         return res;
     }
 
-    static transpile(ast) {
+    static transpile(code) {
         let res = '';
+
+        const ast = acorn.parse(code, PARSE_OPTIONS);
 
         res += Transpiler.writeBody(ast.body);
     
@@ -542,6 +540,7 @@ end;\n`
     }
 }
 
-const res = Transpiler.transpile(ast);
+const input = fs.readFileSync('input.js');
+const res = Transpiler.transpile(input);
 
 console.log(DO_FORMAT ? luaFmt.formatText(res) : res);
