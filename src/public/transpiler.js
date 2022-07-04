@@ -225,15 +225,15 @@ end;\n`
         if (node.operator === '=') {
             res += ' = ';
         } else if (node.operator === '+=') {
-            res += ` = ${left.name} + `;
+            res += ` = ${Transpiler.convert(left)} + `;
         } else if (node.operator === '-=') {
-            res += ` = ${left.name} - `;
+            res += ` = ${Transpiler.convert(left)} - `;
         } else if (node.operator === '*=') {
-            res += ` = ${left.name} * `;
+            res += ` = ${Transpiler.convert(left)} * `;
         } else if (node.operator === '/=') {
-            res += ` = ${left.name} / `;
+            res += ` = ${Transpiler.convert(left)} / `;
         } else if (node.operator === '%=') {
-            res += ` = ${left.name} % `;
+            res += ` = ${Transpiler.convert(left)} % `;
         }
 
         res += Transpiler.convert(right);
