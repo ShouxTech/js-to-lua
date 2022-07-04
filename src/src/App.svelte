@@ -7,9 +7,6 @@
 	let loadedDeps = 0;
 
 	const NUM_DEPS = 3;
-	const PARSE_OPTIONS = {
-		ecmaVersion: 2021,
-	};
 
 	function setupEditor(editorElement, mode) {
 		const editor = ace.edit(editorElement);
@@ -33,8 +30,7 @@
 		function transpile() {
 			const code = jsEditor.getValue();
 			try {
-				const ast = acorn.parse(code, PARSE_OPTIONS);
-				const res = Transpiler.transpile(ast);
+				const res = Transpiler.transpile(code);
 				luaEditor.setValue(formatText(res), -1);
 			} catch (err) {
 				luaEditor.setValue(err.message, -1);
@@ -50,7 +46,7 @@
 <LibLoader src="transpiler.js" on:loaded={initEditors} libraryDetectionObject="Transpiler"/>
 <LibLoader src="https://pagecdn.io/lib/ace/1.4.6/ace.js" on:loaded={initEditors} libraryDetectionObject="ace"/>
 
-<div bind:this={jsEditorElement} id="js-editor">{`while (true == true) {
+<div bind:this={jsEditorElement} id="js-editor">{`while (true === true) {
 	console.log('this works');
 }
 `}</div>

@@ -1,3 +1,7 @@
+const PARSE_OPTIONS = {
+    ecmaVersion: 2021,
+};
+
 class Transpiler {
     static conversions = {
         'Literal': (node) => {
@@ -289,7 +293,14 @@ end;\n`
         const callee = node.callee;
         const args = node.arguments;
 
-        res += `${Transpiler.convert(callee)}(`;
+        if (callee.type === 'ArrowFunctionExpression' || callee.type === 'FunctionExpression') {
+            res += '(';
+        }
+        res += Transpiler.convert(callee);
+        if (callee.type === 'ArrowFunctionExpression' || callee.type === 'FunctionExpression') {
+            res += ')';
+        }
+        res += '(';
 
         for (const arg of args) {
             res += `${Transpiler.convert(arg)}, `;
@@ -513,8 +524,10 @@ end;\n`
         return res;
     }
 
-    static transpile(ast) {
+    static transpile(code) {
         let res = '';
+
+        const ast = acorn.parse(code, PARSE_OPTIONS);
 
         res += Transpiler.writeBody(ast.body);
     
